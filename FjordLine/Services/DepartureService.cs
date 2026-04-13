@@ -79,6 +79,7 @@ public class DepartureService
             };
 
             departure.Bookings.Add(booking);
+            AdjustCapacity(departure, ports, fromIdx, toIdx, -request.PassengerCount);
             return (booking, null);
         }
     }
@@ -95,7 +96,12 @@ public class DepartureService
             if (booking is null)
                 return false;
 
+            var ports = BuildPortOrder(departure.SegmentCapacities);
+            var fromIdx = ports.IndexOf(booking.BoardingPort);
+            var toIdx = ports.IndexOf(booking.DisembarkPort);
+
             departure.Bookings.Remove(booking);
+            AdjustCapacity(departure, ports, fromIdx, toIdx, booking.PassengerCount);
             return true;
         }
     }
@@ -119,21 +125,17 @@ public class DepartureService
         for (var i = fromIdx; i < toIdx; i++)
         {
             var segment = departure.SegmentCapacities.First(s => s.From == ports[i]);
-
-            var booked = departure.Bookings
-                .Where(b =>
-                {
-                    var bFrom = ports.IndexOf(b.BoardingPort);
-                    var bTo = ports.IndexOf(b.DisembarkPort);
-                    return bFrom <= i && i < bTo;
-                })
-                .Sum(b => b.PassengerCount);
-
-            if (booked + passengerCount > segment.Capacity)
+            if (segment.Capacity < passengerCount)
                 return new BookingFailure(BookingError.CapacityExceeded,
-                    $"Not enough capacity on segment '{segment.From} → {segment.To}'. Available: {segment.Capacity - booked}.");
+                    $"Not enough capacity on segment '{segment.From} → {segment.To}'. Available: {segment.Capacity}.");
         }
 
         return null;
+    }
+
+    private static void AdjustCapacity(Departure departure, List<string> ports, int fromIdx, int toIdx, int delta)
+    {
+        for (var i = fromIdx; i < toIdx; i++)
+            departure.SegmentCapacities.First(s => s.From == ports[i]).Capacity += delta;
     }
 }

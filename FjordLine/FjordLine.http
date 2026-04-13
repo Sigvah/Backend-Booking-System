@@ -1,6 +1,62 @@
-@FjordLine_HostAddress = http://localhost:5104
+@host = http://localhost:5104
+@departureId = 11111111-0000-0000-0000-000000000001
 
-GET {{FjordLine_HostAddress}}/weatherforecast/
+### GET all departures
+GET {{host}}/departures
 Accept: application/json
+
+###
+
+### GET manifest for a departure
+GET {{host}}/departures/{{departureId}}/manifest
+Accept: application/json
+
+###
+
+### POST create booking — full route Bergen → Kristiansand
+POST {{host}}/departures/{{departureId}}/bookings
+Content-Type: application/json
+
+{
+  "passengerName": "Ola Nordmann",
+  "passengerCount": 2,
+  "boardingPort": "Bergen",
+  "disembarkPort": "Kristiansand",
+  "vehicle": null
+}
+
+###
+
+### POST create booking — partial route Stavanger → Hirtshals
+POST {{host}}/departures/{{departureId}}/bookings
+Content-Type: application/json
+
+{
+  "passengerName": "Kari Nordmann",
+  "passengerCount": 1,
+  "boardingPort": "Stavanger",
+  "disembarkPort": "Hirtshals",
+  "vehicle": "Car"
+}
+
+###
+
+### POST create booking — unknown departure (expects 404)
+POST {{host}}/departures/00000000-0000-0000-0000-000000000000/bookings
+Content-Type: application/json
+
+{
+  "passengerName": "Ghost",
+  "passengerCount": 1,
+  "boardingPort": "Bergen",
+  "disembarkPort": "Kristiansand",
+  "vehicle": null
+}
+
+###
+
+### DELETE cancel a booking — replace {bookingId} with an id from the manifest
+# @bookingId = <paste-id-here>
+DELETE {{host}}/departures/{{departureId}}/bookings/{{bookingId}}
 
 ###
