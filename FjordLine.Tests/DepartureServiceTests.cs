@@ -26,42 +26,6 @@ public class DepartureServiceTests
         Assert.Contains(all, d => d.Id == DepartureId);
     }
 
-    // --- BuildPortOrder ---
-
-    [Fact]
-    public void BuildPortOrder_ReturnsCorrectOrder()
-    {
-        var segments = new List<RouteSegment>
-        {
-            new() { From = "Bergen",    To = "Stavanger" },
-            new() { From = "Stavanger", To = "Hirtshals" },
-            new() { From = "Hirtshals", To = "Kristiansand" },
-        };
-
-        var ports = DepartureService.BuildPortOrder(segments);
-
-        Assert.Equal(["Bergen", "Stavanger", "Hirtshals", "Kristiansand"], ports);
-    }
-
-    [Fact]
-    public void BuildPortOrder_SingleSegment_ReturnsBothPorts()
-    {
-        var segments = new List<RouteSegment>
-        {
-            new() { From = "Bergen", To = "Stavanger" }
-        };
-
-        var ports = DepartureService.BuildPortOrder(segments);
-
-        Assert.Equal(["Bergen", "Stavanger"], ports);
-    }
-
-    [Fact]
-    public void BuildPortOrder_EmptyList_ReturnsEmpty()
-    {
-        Assert.Empty(DepartureService.BuildPortOrder([]));
-    }
-
     // --- CreateBooking: success ---
 
     [Fact]

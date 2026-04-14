@@ -13,6 +13,6 @@ public class Booking
 public enum VehicleType
 {
     Car,
-    Bicycle,
-    Motorcycle,
+    Bike,
+    Bus,
 }

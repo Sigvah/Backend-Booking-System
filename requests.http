@@ -1,0 +1,62 @@
+@baseUrl = http://localhost:5104
+@departureId = 11111111-0000-0000-0000-000000000001
+
+### List all departures
+GET {{baseUrl}}/departures
+
+### Get manifest for a departure
+GET {{baseUrl}}/departures/{{departureId}}/manifest
+
+### Book a full-route passage (Bergen → Kristiansand)
+# @name fullRoute
+POST {{baseUrl}}/departures/{{departureId}}/bookings
+Content-Type: application/json
+
+{
+  "passengerName": "Alice Hansen",
+  "passengerCount": 2,
+  "boardingPort": "Bergen",
+  "disembarkPort": "Kristiansand",
+  "vehicle": null
+}
+
+### Book a partial passage with a car (Bergen → Stavanger)
+# @name partial
+POST {{baseUrl}}/departures/{{departureId}}/bookings
+Content-Type: application/json
+
+{
+  "passengerName": "Bob Olsen",
+  "passengerCount": 1,
+  "boardingPort": "Bergen",
+  "disembarkPort": "Stavanger",
+  "vehicle": "Car"
+}
+
+### Cancel the full-route booking (paste bookingId from response above)
+@bookingId = 00000000-0000-0000-0000-000000000000
+DELETE {{baseUrl}}/departures/{{departureId}}/bookings/{{bookingId}}
+
+### Attempt to book with invalid passenger count (expect 400)
+POST {{baseUrl}}/departures/{{departureId}}/bookings
+Content-Type: application/json
+
+{
+  "passengerName": "Eve Nilsen",
+  "passengerCount": 0,
+  "boardingPort": "Bergen",
+  "disembarkPort": "Kristiansand",
+  "vehicle": null
+}
+
+### Attempt to book on unknown departure (expect 404)
+POST {{baseUrl}}/departures/99999999-0000-0000-0000-000000000000/bookings
+Content-Type: application/json
+
+{
+  "passengerName": "Eve Nilsen",
+  "passengerCount": 1,
+  "boardingPort": "Bergen",
+  "disembarkPort": "Kristiansand",
+  "vehicle": null
+}

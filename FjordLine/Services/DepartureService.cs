@@ -40,8 +40,6 @@ public class DepartureService
         lock (_lock) return _departures.ToList();
     }
 
-    private Departure? GetById(Guid id) => _departures.FirstOrDefault(d => d.Id == id);
-
     public (Booking? booking, BookingFailure? failure) CreateBooking(Guid departureId, CreateBookingRequest request)
     {
         if (request.PassengerCount <= 0)
@@ -53,7 +51,7 @@ public class DepartureService
             if (departure is null)
                 return (null, new BookingFailure(BookingError.DepartureNotFound, "Departure not found."));
 
-            var ports = BuildPortOrder(departure.SegmentCapacities);
+            var ports = departure.Ports;
             var fromIdx = ports.IndexOf(request.BoardingPort);
             var toIdx = ports.IndexOf(request.DisembarkPort);
 
@@ -79,7 +77,7 @@ public class DepartureService
             };
 
             departure.Bookings.Add(booking);
-            AdjustCapacity(departure, ports, fromIdx, toIdx, -request.PassengerCount);
+            AdjustCapacity(departure, fromIdx, toIdx, -request.PassengerCount);
             return (booking, null);
         }
     }
@@ -96,12 +94,11 @@ public class DepartureService
             if (booking is null)
                 return false;
 
-            var ports = BuildPortOrder(departure.SegmentCapacities);
-            var fromIdx = ports.IndexOf(booking.BoardingPort);
-            var toIdx = ports.IndexOf(booking.DisembarkPort);
+            var fromIdx = departure.Ports.IndexOf(booking.BoardingPort);
+            var toIdx = departure.Ports.IndexOf(booking.DisembarkPort);
 
             departure.Bookings.Remove(booking);
-            AdjustCapacity(departure, ports, fromIdx, toIdx, booking.PassengerCount);
+            AdjustCapacity(departure, fromIdx, toIdx, booking.PassengerCount);
             return true;
         }
     }
@@ -115,16 +112,12 @@ public class DepartureService
         }
     }
 
-    // Returns the ordered list of ports derived from the segment chain.
-    public static List<string> BuildPortOrder(List<RouteSegment> segments) =>
-        segments.Count == 0 ? [] : [segments[0].From, ..segments.Select(s => s.To)];
-
     private static BookingFailure? CheckSegmentCapacities(
         Departure departure, List<string> ports, int fromIdx, int toIdx, int passengerCount)
     {
         for (var i = fromIdx; i < toIdx; i++)
         {
-            var segment = departure.SegmentCapacities.First(s => s.From == ports[i]);
+            var segment = departure.SegmentCapacities[i];
             if (segment.Capacity < passengerCount)
                 return new BookingFailure(BookingError.CapacityExceeded,
                     $"Not enough capacity on segment '{segment.From} → {segment.To}'. Available: {segment.Capacity}.");
@@ -133,9 +126,9 @@ public class DepartureService
         return null;
     }
 
-    private static void AdjustCapacity(Departure departure, List<string> ports, int fromIdx, int toIdx, int delta)
+    private static void AdjustCapacity(Departure departure, int fromIdx, int toIdx, int delta)
     {
         for (var i = fromIdx; i < toIdx; i++)
-            departure.SegmentCapacities.First(s => s.From == ports[i]).Capacity += delta;
+            departure.SegmentCapacities[i].Capacity += delta;
     }
 }
