@@ -42,6 +42,8 @@ public class DepartureService
 
     public (Booking? booking, BookingFailure? failure) CreateBooking(Guid departureId, CreateBookingRequest request)
     {
+        if (string.IsNullOrWhiteSpace(request.PassengerName))
+            return (null, new BookingFailure(BookingError.InvalidInput, "PassengerName is required."));
         if (request.PassengerCount <= 0)
             return (null, new BookingFailure(BookingError.InvalidInput, "PassengerCount must be at least 1."));
 

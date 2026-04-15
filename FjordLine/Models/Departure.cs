@@ -8,6 +8,7 @@ public class Departure
     public string Route { get; init; } = string.Empty;
     public DateTime DepartureTime { get; init; }
     public List<RouteSegment> SegmentCapacities { get; init; } = [];
+    [JsonIgnore]
     public List<Booking> Bookings { get; } = [];
 
     [JsonIgnore]

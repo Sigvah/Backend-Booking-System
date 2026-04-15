@@ -98,6 +98,19 @@ public class DepartureServiceTests
         Assert.Equal(BookingError.InvalidInput, failure!.Kind);
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void CreateBooking_EmptyPassengerName_ReturnsInvalidInput(string name)
+    {
+        var service = CreateService();
+        var (booking, failure) = service.CreateBooking(DepartureId,
+            new CreateBookingRequest(name, 1, "Bergen", "Kristiansand", null));
+
+        Assert.Null(booking);
+        Assert.Equal(BookingError.InvalidInput, failure!.Kind);
+    }
+
     [Fact]
     public void CreateBooking_UnknownDisembarkPort_ReturnsInvalidInput()
     {
