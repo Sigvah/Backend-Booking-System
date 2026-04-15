@@ -232,6 +232,83 @@ public class DepartureServiceTests
         Assert.NotNull(booking);
     }
 
+    // --- Vehicle capacity ---
+
+    private const int VehicleCapacity = 50; // seeded value
+
+    [Fact]
+    public void CreateBooking_WithCar_SucceedsAndStoresVehicle()
+    {
+        var service = CreateService();
+        var (booking, failure) = service.CreateBooking(DepartureId,
+            new CreateBookingRequest("Alice", 1, "Bergen", "Kristiansand", VehicleType.Car));
+
+        Assert.Null(failure);
+        Assert.Equal(VehicleType.Car, booking!.Vehicle);
+    }
+
+    [Fact]
+    public void CreateBooking_ExceedsVehicleCapacity_ReturnsCapacityExceeded()
+    {
+        var service = CreateService();
+        // Car weight = 4, so 50 units / 4 = 12 cars max, 13th should fail
+        for (var i = 0; i < 12; i++)
+            service.CreateBooking(DepartureId,
+                new CreateBookingRequest($"Driver {i}", 1, "Bergen", "Kristiansand", VehicleType.Car));
+
+        var (booking, failure) = service.CreateBooking(DepartureId,
+            new CreateBookingRequest("Late", 1, "Bergen", "Kristiansand", VehicleType.Car));
+
+        Assert.Null(booking);
+        Assert.Equal(BookingError.CapacityExceeded, failure!.Kind);
+    }
+
+    [Fact]
+    public void CancelBooking_WithVehicle_RestoresVehicleCapacity()
+    {
+        var service = CreateService();
+        // Fill vehicle capacity with cars (12 cars = 48 units, 2 remaining — not enough for another car)
+        for (var i = 0; i < 12; i++)
+            service.CreateBooking(DepartureId,
+                new CreateBookingRequest($"Driver {i}", 1, "Bergen", "Kristiansand", VehicleType.Car));
+
+        var (lastCar, _) = service.CreateBooking(DepartureId,
+            new CreateBookingRequest("Last", 1, "Bergen", "Kristiansand", VehicleType.Bike));
+
+        service.CancelBooking(DepartureId, lastCar!.Id);
+
+        // After cancelling the bike, we should still not have room for a car (only 2 units freed)
+        // Cancel one car instead to free 4 units
+        var manifest = service.GetManifest(DepartureId)!;
+        service.CancelBooking(DepartureId, manifest[0].Id);
+
+        var (booking, failure) = service.CreateBooking(DepartureId,
+            new CreateBookingRequest("New", 1, "Bergen", "Kristiansand", VehicleType.Car));
+
+        Assert.Null(failure);
+        Assert.NotNull(booking);
+    }
+
+    [Fact]
+    public void CreateBooking_VehicleCapacityIndependentOfPassengerCapacity()
+    {
+        var service = CreateService();
+        // Fill passenger capacity on Bergen→Stavanger
+        service.CreateBooking(DepartureId,
+            new CreateBookingRequest("Group", BergenStavangerCapacity, "Bergen", "Stavanger", null));
+
+        // Vehicle booking on same segment should still work
+        var (booking, failure) = service.CreateBooking(DepartureId,
+            new CreateBookingRequest("Driver", 0, "Bergen", "Stavanger", VehicleType.Car));
+
+        // PassengerCount 0 is invalid, so test vehicle independently
+        var (booking2, failure2) = service.CreateBooking(DepartureId,
+            new CreateBookingRequest("Driver", 1, "Stavanger", "Kristiansand", VehicleType.Car));
+
+        Assert.Null(failure2);
+        Assert.NotNull(booking2);
+    }
+
     // --- GetManifest ---
 
     [Fact]

@@ -7,6 +7,13 @@ public class DepartureService
 {
     private readonly Lock _lock = new();
 
+    private static readonly Dictionary<VehicleType, int> VehicleWeights = new()
+    {
+        { VehicleType.Bike,  1 },
+        { VehicleType.Car,   4 },
+        { VehicleType.Bus,  15 },
+    };
+
     private readonly List<Departure> _departures =
     [
         new Departure
@@ -16,9 +23,9 @@ public class DepartureService
             DepartureTime = DateTime.UtcNow.AddDays(3),
             SegmentCapacities =
             [
-                new RouteSegment { From = "Bergen",    To = "Stavanger",    Capacity = 400 },
-                new RouteSegment { From = "Stavanger", To = "Hirtshals",    Capacity = 350 },
-                new RouteSegment { From = "Hirtshals", To = "Kristiansand", Capacity = 300 },
+                new RouteSegment { From = "Bergen",    To = "Stavanger",    Capacity = 400, VehicleCapacity = 50 },
+                new RouteSegment { From = "Stavanger", To = "Hirtshals",    Capacity = 350, VehicleCapacity = 50 },
+                new RouteSegment { From = "Hirtshals", To = "Kristiansand", Capacity = 300, VehicleCapacity = 50 },
             ]
         },
         new Departure
@@ -28,9 +35,9 @@ public class DepartureService
             DepartureTime = DateTime.UtcNow.AddDays(10),
             SegmentCapacities =
             [
-                new RouteSegment { From = "Bergen",    To = "Stavanger",    Capacity = 400 },
-                new RouteSegment { From = "Stavanger", To = "Hirtshals",    Capacity = 350 },
-                new RouteSegment { From = "Hirtshals", To = "Kristiansand", Capacity = 300 },
+                new RouteSegment { From = "Bergen",    To = "Stavanger",    Capacity = 400, VehicleCapacity = 50 },
+                new RouteSegment { From = "Stavanger", To = "Hirtshals",    Capacity = 350, VehicleCapacity = 50 },
+                new RouteSegment { From = "Hirtshals", To = "Kristiansand", Capacity = 300, VehicleCapacity = 50 },
             ]
         }
     ];
@@ -64,7 +71,7 @@ public class DepartureService
             if (fromIdx >= toIdx)
                 return (null, new BookingFailure(BookingError.InvalidInput, "DisembarkPort must come after BoardingPort on the route."));
 
-            var capacityFailure = CheckSegmentCapacities(departure, ports, fromIdx, toIdx, request.PassengerCount);
+            var capacityFailure = CheckSegmentCapacities(departure, fromIdx, toIdx, request.PassengerCount, request.Vehicle);
             if (capacityFailure is not null)
                 return (null, capacityFailure);
 
@@ -79,7 +86,7 @@ public class DepartureService
             };
 
             departure.Bookings.Add(booking);
-            AdjustCapacity(departure, fromIdx, toIdx, -request.PassengerCount);
+            AdjustCapacity(departure, fromIdx, toIdx, -request.PassengerCount, request.Vehicle);
             return (booking, null);
         }
     }
@@ -100,7 +107,7 @@ public class DepartureService
             var toIdx = departure.Ports.IndexOf(booking.DisembarkPort);
 
             departure.Bookings.Remove(booking);
-            AdjustCapacity(departure, fromIdx, toIdx, booking.PassengerCount);
+            AdjustCapacity(departure, fromIdx, toIdx, booking.PassengerCount, booking.Vehicle);
             return true;
         }
     }
@@ -115,22 +122,32 @@ public class DepartureService
     }
 
     private static BookingFailure? CheckSegmentCapacities(
-        Departure departure, List<string> ports, int fromIdx, int toIdx, int passengerCount)
+        Departure departure, int fromIdx, int toIdx, int passengerCount, VehicleType? vehicle)
     {
+        var vehicleWeight = vehicle is not null ? VehicleWeights[vehicle.Value] : 0;
+
         for (var i = fromIdx; i < toIdx; i++)
         {
             var segment = departure.SegmentCapacities[i];
             if (segment.Capacity < passengerCount)
                 return new BookingFailure(BookingError.CapacityExceeded,
-                    $"Not enough capacity on segment '{segment.From} → {segment.To}'. Available: {segment.Capacity}.");
+                    $"Not enough passenger capacity on '{segment.From} → {segment.To}'. Available: {segment.Capacity}.");
+            if (vehicleWeight > 0 && segment.VehicleCapacity < vehicleWeight)
+                return new BookingFailure(BookingError.CapacityExceeded,
+                    $"Not enough vehicle capacity on '{segment.From} → {segment.To}'. Available: {segment.VehicleCapacity} units.");
         }
 
         return null;
     }
 
-    private static void AdjustCapacity(Departure departure, int fromIdx, int toIdx, int delta)
+    private static void AdjustCapacity(Departure departure, int fromIdx, int toIdx, int passengerDelta, VehicleType? vehicle)
     {
+        var vehicleWeight = vehicle is not null ? VehicleWeights[vehicle.Value] : 0;
         for (var i = fromIdx; i < toIdx; i++)
-            departure.SegmentCapacities[i].Capacity += delta;
+        {
+            departure.SegmentCapacities[i].Capacity += passengerDelta;
+            if (vehicleWeight > 0)
+                departure.SegmentCapacities[i].VehicleCapacity += passengerDelta > 0 ? vehicleWeight : -vehicleWeight;
+        }
     }
 }

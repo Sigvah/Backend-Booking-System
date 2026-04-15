@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="FjordLine.Tests/FjordLine.Tests.csproj" />
+  <Project Path="FjordLine/FjordLine.csproj" />
+</Solution>
