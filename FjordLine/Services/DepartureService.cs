@@ -21,11 +21,11 @@ public class DepartureService
             Id = Guid.Parse("11111111-0000-0000-0000-000000000001"),
             Route = "Bergen → Stavanger → Hirtshals → Kristiansand",
             DepartureTime = DateTime.UtcNow.AddDays(3),
-            SegmentCapacities =
+            Segments =
             [
-                new RouteSegment { From = "Bergen",    To = "Stavanger",    Capacity = 400, VehicleCapacity = 50 },
-                new RouteSegment { From = "Stavanger", To = "Hirtshals",    Capacity = 350, VehicleCapacity = 50 },
-                new RouteSegment { From = "Hirtshals", To = "Kristiansand", Capacity = 300, VehicleCapacity = 50 },
+                new RouteSegment { From = "Bergen",    To = "Stavanger",    PassengerCapacity = 400, VehicleCapacity = 50 },
+                new RouteSegment { From = "Stavanger", To = "Hirtshals",    PassengerCapacity = 350, VehicleCapacity = 50 },
+                new RouteSegment { From = "Hirtshals", To = "Kristiansand", PassengerCapacity = 300, VehicleCapacity = 50 },
             ]
         },
         new Departure
@@ -33,11 +33,11 @@ public class DepartureService
             Id = Guid.Parse("11111111-0000-0000-0000-000000000002"),
             Route = "Bergen → Stavanger → Hirtshals → Kristiansand",
             DepartureTime = DateTime.UtcNow.AddDays(10),
-            SegmentCapacities =
+            Segments =
             [
-                new RouteSegment { From = "Bergen",    To = "Stavanger",    Capacity = 400, VehicleCapacity = 50 },
-                new RouteSegment { From = "Stavanger", To = "Hirtshals",    Capacity = 350, VehicleCapacity = 50 },
-                new RouteSegment { From = "Hirtshals", To = "Kristiansand", Capacity = 300, VehicleCapacity = 50 },
+                new RouteSegment { From = "Bergen",    To = "Stavanger",    PassengerCapacity = 400, VehicleCapacity = 50 },
+                new RouteSegment { From = "Stavanger", To = "Hirtshals",    PassengerCapacity = 350, VehicleCapacity = 50 },
+                new RouteSegment { From = "Hirtshals", To = "Kristiansand", PassengerCapacity = 300, VehicleCapacity = 50 },
             ]
         }
     ];
@@ -128,10 +128,10 @@ public class DepartureService
 
         for (var i = fromIdx; i < toIdx; i++)
         {
-            var segment = departure.SegmentCapacities[i];
-            if (segment.Capacity < passengerCount)
+            var segment = departure.Segments[i];
+            if (segment.PassengerCapacity < passengerCount)
                 return new BookingFailure(BookingError.CapacityExceeded,
-                    $"Not enough passenger capacity on '{segment.From} → {segment.To}'. Available: {segment.Capacity}.");
+                    $"Not enough passenger capacity on '{segment.From} → {segment.To}'. Available: {segment.PassengerCapacity}.");
             if (vehicleWeight > 0 && segment.VehicleCapacity < vehicleWeight)
                 return new BookingFailure(BookingError.CapacityExceeded,
                     $"Not enough vehicle capacity on '{segment.From} → {segment.To}'. Available: {segment.VehicleCapacity} units.");
@@ -145,9 +145,9 @@ public class DepartureService
         var vehicleWeight = vehicle is not null ? VehicleWeights[vehicle.Value] : 0;
         for (var i = fromIdx; i < toIdx; i++)
         {
-            departure.SegmentCapacities[i].Capacity += passengerDelta;
+            departure.Segments[i].PassengerCapacity += passengerDelta;
             if (vehicleWeight > 0)
-                departure.SegmentCapacities[i].VehicleCapacity += passengerDelta > 0 ? vehicleWeight : -vehicleWeight;
+                departure.Segments[i].VehicleCapacity += passengerDelta > 0 ? vehicleWeight : -vehicleWeight;
         }
     }
 }
