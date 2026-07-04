@@ -1,85 +1,76 @@
-# Fjord Line – Backend Booking System
+# Champions Battle Prep
 
-Backend API for booking ferry passages on the Bergen–Stavanger–Hirtshals–Kristiansand route. Built with C# and ASP.NET Core Minimal APIs.
+A web app for winning team preview in **Pokemon Champions**: store your teams,
+scout the opponent's 6, get exact speed matchups instantly — and let Claude
+draft your game plan.
 
-## Getting started
+## The workflow
 
-**Prerequisites:** [.NET 10 SDK](https://dotnet.microsoft.com/download)
+1. **Teams** — build your team directly in the app (pick species, item,
+   ability, nature, EVs and moves — no external tools needed), or import via
+   the standard team-export format (Showdown paste) as a shortcut. Everything
+   is stored in your browser (localStorage); export back to text any time.
+2. **Scout** — at team preview, pick your team and type in the opponent's 6
+   (save frequent opponents for later study). You instantly get a color-coded
+   speed matrix: each of their Pokemon's realistic speed range (uninvested ↔
+   max, Choice Scarf ceiling, and the 0-IV/minus-nature Trick Room floor for
+   slow Pokemon) against your actual spreads, plus deterministic hazard
+   warnings — which of your moves fail against which of their Pokemon,
+   Trick Room readiness, weather speed combos.
+3. **Game plan (Claude)** — one button sends your full team + their 6 + the
+   exact speed math to Claude (Haiku by default) and streams back: their
+   likely sets, the biggest threats each way, recommended leads/backs for
+   singles or doubles, and your win condition. The app supplies the exact
+   numbers so the model never has to guess the math.
+4. **Speed Calculator** — a deep-dive tab for a specific speed question:
+   two-to-six Pokemon under any conditions (boost stages, items, abilities,
+   weather, terrain, Tailwind, paralysis, Trick Room), using the games' exact
+   4096-based fixed-point modifier chain.
+
+## Claude API setup
+
+Open **⚙ Settings**, paste your Anthropic API key (console.anthropic.com) and
+pick a model — Claude Haiku 4.5 (default, well under a cent per analysis),
+Claude Sonnet 5, or Claude Opus 4.8. The key is stored only in your browser's
+localStorage and requests go directly from your browser to the Anthropic API;
+there is no backend. Don't use this setup on a shared/public deployment —
+it's built as a personal tool.
+
+## Hosting
+
+The repo ships a GitHub Pages workflow (`.github/workflows/deploy.yml`):
+every push to `main` runs the tests, builds, and deploys automatically.
+One-time setup: repo **Settings → Pages → Source: GitHub Actions**. Assets
+use relative paths, so it works under any repo name or custom domain. The
+app is fully static — your Anthropic API key stays in your own browser and
+is never part of the deployment.
+
+## Development
 
 ```bash
-cd FjordLine
-dotnet run
+npm install
+npm run dev        # start dev server
+npm test           # speed engine + paste parser + analysis tests
+npm run build      # typecheck + production build into dist/
 ```
 
-The API starts on `http://localhost:5104`.
+### Updating the Pokemon data
 
-## Interactive UI
-
-Open `http://localhost:5104/scalar` in your browser for a full interactive API explorer (Scalar).
-
-## Endpoints
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/departures` | List all departures with route, time and remaining capacity |
-| `POST` | `/departures/{id}/bookings` | Register a booking |
-| `GET` | `/departures/{id}/manifest` | Get passenger list for a departure |
-| `DELETE` | `/departures/{id}/bookings/{bookingId}` | Cancel a booking |
-
-### GET /departures
+`src/data/pokedex.json` (1,368 Pokemon incl. regional formes and Megas) is
+generated from the [Pokemon Showdown](https://github.com/smogon/pokemon-showdown)
+pokedex:
 
 ```bash
-curl http://localhost:5104/departures
+npm run generate-data
 ```
 
-### POST /departures/{id}/bookings
+## Project layout
 
-```bash
-curl -X POST http://localhost:5104/departures/11111111-0000-0000-0000-000000000001/bookings \
-  -H "Content-Type: application/json" \
-  -d '{
-    "passengerName": "Alice Hansen",
-    "passengerCount": 2,
-    "boardingPort": "Bergen",
-    "disembarkPort": "Kristiansand",
-    "vehicle": null
-  }'
 ```
-
-Valid ports: `Bergen`, `Stavanger`, `Hirtshals`, `Kristiansand`
-
-Valid vehicle types: `Car`, `Bus`, `Bicycle` (or `null`)
-
-Returns `409 Conflict` if capacity is exceeded on any segment of the journey.
-
-### GET /departures/{id}/manifest
-
-```bash
-curl http://localhost:5104/departures/11111111-0000-0000-0000-000000000001/manifest
-```
-
-### DELETE /departures/{id}/bookings/{bookingId}
-
-```bash
-curl -X DELETE http://localhost:5104/departures/11111111-0000-0000-0000-000000000001/bookings/{bookingId}
-```
-
-## Seed data
-
-Two departures are pre-loaded on startup:
-
-| ID | Route | Departure |
-|----|-------|-----------|
-| `11111111-0000-0000-0000-000000000001` | Bergen → Stavanger → Hirtshals → Kristiansand | +3 days |
-| `11111111-0000-0000-0000-000000000002` | Bergen → Stavanger → Hirtshals → Kristiansand | +10 days |
-
-## Multi-leg capacity
-
-Capacity is tracked independently per segment. A passenger boarding in Bergen and disembarking in Stavanger only occupies the Bergen–Stavanger segment, leaving capacity on subsequent segments available for other passengers.
-
-## Running tests
-
-```bash
-cd FjordLine.Tests
-dotnet test
+scripts/generate-data.mjs   Pokedex dataset generator
+src/engine/speed.ts         exact speed formulas + turn order (unit tested)
+src/lib/teams.ts            team storage + Showdown paste parser (unit tested)
+src/lib/analysis.ts         stat calc, opponent speed ranges, matchup verdicts
+src/lib/claude.ts           Claude API integration + prompt builder
+src/components/             UI: Scout, Teams, Calculator, Settings
 ```
