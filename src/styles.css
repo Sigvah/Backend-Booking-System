@@ -1316,3 +1316,276 @@ td.cell-slower { background: rgba(232, 84, 79, 0.18); }
   margin-top: 12px;
   font-style: italic;
 }
+
+/* ---- mobile matchup cards (hidden on desktop) ---- */
+
+.mobile-matchups {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mm-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.mm-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.mm-title .range {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.mm-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mm-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 7px;
+  padding: 5px 10px;
+  font-size: 0.85rem;
+}
+
+.mm-row.cell-safe { background: rgba(79, 192, 106, 0.28); }
+.mm-row.cell-scarf-risk { background: rgba(79, 192, 106, 0.12); }
+.mm-row.cell-tie { background: rgba(240, 180, 41, 0.22); }
+.mm-row.cell-range { background: rgba(232, 160, 79, 0.16); }
+.mm-row.cell-slower { background: rgba(232, 84, 79, 0.18); }
+
+.mm-name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 30%;
+}
+
+.mm-flags {
+  flex-shrink: 0;
+  min-width: 20px;
+}
+
+.mm-verdict {
+  flex: 1;
+  text-align: right;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+}
+
+.mm-speed {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  min-width: 34px;
+  text-align: right;
+}
+
+/* ---- small screens ---- */
+
+@media (max-width: 760px) {
+  .app {
+    padding: 14px 12px 40px;
+  }
+
+  .app-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin: 10px 0 16px;
+  }
+
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tabs button {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Desktop matrix → mobile cards */
+  .matrix-wrap {
+    display: none;
+  }
+
+  .mobile-matchups {
+    display: flex;
+  }
+
+  /* Prevent iOS zoom-on-focus and make targets comfortably tappable */
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  button {
+    min-height: 42px;
+  }
+
+  .icon-btn,
+  .segmented button {
+    min-height: 36px;
+  }
+
+  .scout-controls {
+    gap: 12px;
+  }
+
+  .scout-controls select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .scout-controls label {
+    flex: 1 1 100%;
+  }
+
+  .opponent-slots {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .saved-opponents .save-name {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+
+  .species-options {
+    max-height: 46vh;
+  }
+
+  .species-options li {
+    padding: 9px 10px;
+  }
+
+  /* Teams builder */
+  .mon-editors {
+    grid-template-columns: 1fr;
+  }
+
+  .mon-editor-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ev-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .team-header {
+    gap: 8px;
+  }
+
+  .team-sprites {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  /* Guide tables scroll instead of squishing */
+  .guide-table {
+    display: block;
+    overflow-x: auto;
+    white-space: normal;
+  }
+
+  .guide-table table {
+    min-width: 100%;
+  }
+
+  /* Modals go near-fullscreen */
+  .modal {
+    width: 94vw;
+  }
+
+  .info-modal {
+    max-height: 92vh;
+  }
+
+  .warning-card {
+    padding: 10px 12px;
+  }
+
+  .result-speed {
+    font-size: 1.1rem;
+    min-width: 44px;
+  }
+}
+
+/* ---- overflow hardening: let grid tracks shrink below content width ---- */
+
+.mon-editor {
+  min-width: 0;
+}
+
+.mon-editor-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.mon-editor-grid label,
+.ev-grid label {
+  min-width: 0;
+}
+
+.mon-editor-grid select,
+.mon-editor-grid input {
+  min-width: 0;
+}
+
+@media (max-width: 760px) {
+  .mon-editors {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mon-editor-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.moves-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.moves-grid input {
+  min-width: 0;
+}
+
+@media (max-width: 760px) {
+  .field-group {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .segmented {
+    overflow-x: auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .segmented::-webkit-scrollbar {
+    display: none;
+  }
+
+  .segmented button {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}

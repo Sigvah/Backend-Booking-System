@@ -44,20 +44,28 @@ export default function App() {
             className={tab === "calculator" ? "active" : ""}
             onClick={() => setTab("calculator")}
           >
-            Speed Calculator
+            Calculator
           </button>
           <button className={tab === "guide" ? "active" : ""} onClick={() => setTab("guide")}>
-            Beginner Guide
+            Guide
           </button>
         </nav>
       </header>
 
-      {tab === "scout" && (
+      {/* Keep pages mounted so tab switches don't wipe in-progress state
+          (scouted opponents, a streaming game plan, calculator setups). */}
+      <div style={{ display: tab === "scout" ? undefined : "none" }}>
         <ScoutPage teams={teams} settings={settings} onOpenSettings={() => setShowSettings(true)} />
-      )}
-      {tab === "teams" && <TeamsPage teams={teams} onChange={setTeams} />}
-      {tab === "calculator" && <CalculatorPage />}
-      {tab === "guide" && <GuidePage />}
+      </div>
+      <div style={{ display: tab === "teams" ? undefined : "none" }}>
+        <TeamsPage teams={teams} onChange={setTeams} />
+      </div>
+      <div style={{ display: tab === "calculator" ? undefined : "none" }}>
+        <CalculatorPage />
+      </div>
+      <div style={{ display: tab === "guide" ? undefined : "none" }}>
+        <GuidePage />
+      </div>
 
       {showSettings && (
         <SettingsModal

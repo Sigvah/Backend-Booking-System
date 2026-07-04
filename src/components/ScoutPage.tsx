@@ -289,6 +289,58 @@ export function ScoutPage({ teams, settings, onOpenSettings }: Props) {
               </tbody>
             </table>
           </div>
+          {/* Phone layout: one card per opponent, my team as verdict rows */}
+          <div className="mobile-matchups">
+            {activeOpponents.map((opp, j) => {
+              const p = opponentSpeedProfile(opp);
+              return (
+                <div key={opp.id} className="mm-card">
+                  <div className="mm-head">
+                    <Sprite species={opp} size={44} />
+                    <div className="mm-title">
+                      <button className="name-link" onClick={() => setInfoSpecies(opp)}>
+                        {opp.name}
+                      </button>
+                      <div className="range">
+                        {p.min}–{p.max} <span className="scarf">⚡{p.scarfMax}</span>
+                        {opp.baseStats.spe <= 70 && (
+                          <span className="tr-floor"> ▼{p.trueMin}</span>
+                        )}
+                      </div>
+                      {headlineTags(opp.abilities).map((tag) => (
+                        <div key={tag} className="warn-tag">
+                          ⚠ {tag}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="mm-rows">
+                    {grid.map((row) => {
+                      if (!row) return null;
+                      const cell = row.cells[j]?.cell;
+                      if (!cell) return null;
+                      return (
+                        <div
+                          key={row.mon.speciesId + row.mySpeed}
+                          className={`mm-row cell-${cell.verdict}`}
+                        >
+                          <Sprite species={row.species} size={26} />
+                          <span className="mm-name">{row.species.name}</span>
+                          <span className="mm-flags">
+                            {cell.theirStabIntoMe >= 2 && <span className="threat">⚠</span>}
+                            {cell.myStabIntoThem >= 2 && <span className="edge">◆</span>}
+                          </span>
+                          <span className="mm-verdict">{VERDICT_LABEL[cell.verdict]}</span>
+                          <span className="mm-speed">{row.mySpeed}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
           <div className="legend">
             <span className="cell-safe">outspeeds even Scarf</span>
             <span className="cell-scarf-risk">outspeeds unless Scarf</span>
