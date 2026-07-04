@@ -91,6 +91,13 @@ Jolly Nature
     expect(p.min).toBe(162); // base 142, 31 IV, 0 EV, neutral @ 50
     expect(p.max).toBe(213);
     expect(p.scarfMax).toBe(319); // 213 * 1.5 = 319.5 → pokeRound half-down 319
+    expect(p.trueMin).toBe(132); // 0 IV, minus nature — the Trick Room floor
+  });
+
+  it("computes the Trick Room floor below the uninvested minimum", () => {
+    const p = opponentSpeedProfile(getSpecies("torkoal")!);
+    expect(p.min).toBe(40); // 31 IV neutral
+    expect(p.trueMin).toBe(22); // 0 IV Brave/Quiet — what TR Torkoal actually runs
   });
 
   it("flags weather speed abilities on opponents", () => {

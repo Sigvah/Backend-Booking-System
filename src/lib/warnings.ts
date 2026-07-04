@@ -1,6 +1,6 @@
 import movesJson from "../data/moves.json";
 import { Species, getSpecies } from "../data";
-import { monEffectiveSpeed } from "./analysis";
+import { monEffectiveSpeed, opponentSpeedProfile } from "./analysis";
 import { Team, TeamMon } from "./teams";
 import { effectiveness } from "./typechart";
 
@@ -21,6 +21,10 @@ const MOVES = new Map(
 export function getMove(name: string): MoveData | undefined {
   return MOVES.get(name.toLowerCase().replace(/[^a-z0-9]/g, ""));
 }
+
+export const ALL_MOVE_NAMES: string[] = (movesJson as MoveData[])
+  .map((m) => m.name)
+  .sort();
 
 export type Severity = "danger" | "warning" | "info";
 
@@ -52,8 +56,8 @@ const ABILITY_TYPE_IMMUNITY: Record<string, string> = {
 const TR_SETTERS = new Set([
   "farigiraf", "armarouge", "hatterene", "dusclops", "cresselia", "porygon2",
   "bronzong", "indeedee", "indeedeef", "gothitelle", "oranguru", "runerigus",
-  "mimikyu", "slowbro", "slowking", "reuniclus", "beheeyem", "dusknoir",
-  "torracat", "grumpig",
+  "mimikyu", "slowbro", "slowking", "slowkinggalar", "reuniclus", "beheeyem",
+  "dusknoir", "diancie", "stakataka", "grumpig",
 ]);
 
 const WEATHER_SETTER: Record<string, { weather: string; abuser: string }> = {
@@ -286,9 +290,14 @@ function checkTrickRoom(mine: MonWithSpecies[], opponents: Species[], out: Match
   const setterNames = setters.length
     ? setters.map((s) => s.name).join(", ")
     : "no classic setter, but lots of very slow attackers";
+  const trFloors = [...opponents]
+    .sort((a, b) => a.baseStats.spe - b.baseStats.spe)
+    .slice(0, 3)
+    .map((o) => `${o.name} can go as low as ${opponentSpeedProfile(o).trueMin}`);
   const detailParts = [
     `Likely setter(s): ${setterNames}.`,
     `Under Trick Room the SLOWEST Pokemon moves first — your speed advantage flips into a liability.`,
+    `TR builds run 0 Speed IVs and a minus nature: ${trFloors.join("; ")}.`,
     `Your slowest (best under TR): ${slowest.map((s) => `${s.name} (${s.spe})`).join(", ")}.`,
   ];
   detailParts.push(

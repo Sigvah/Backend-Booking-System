@@ -81,7 +81,8 @@ export const WEATHER_SPEED_ABILITIES: Record<string, string> = {
 
 export interface OpponentSpeedProfile {
   species: Species;
-  min: number; // 0 EV, 31 IV, neutral
+  min: number; // 0 EV, 31 IV, neutral — a typical uninvested spread
+  trueMin: number; // 0 EV, 0 IV, minus nature — the Trick Room floor
   max: number; // 252 EV, 31 IV, +nature
   scarfMax: number; // max with Choice Scarf
   doublingAbilities: string[]; // e.g. ["Swift Swim (rain)"]
@@ -103,6 +104,10 @@ export function opponentSpeedProfile(species: Species, level = 50): OpponentSpee
     { ...base, ev: 0, nature: "neutral", item: "none" },
     DEFAULT_FIELD,
   );
+  const trueMin = calcEffectiveSpeed(
+    { ...base, iv: 0, ev: 0, nature: "minus", item: "none" },
+    DEFAULT_FIELD,
+  );
   const max = calcEffectiveSpeed(
     { ...base, ev: 252, nature: "plus", item: "none" },
     DEFAULT_FIELD,
@@ -114,7 +119,7 @@ export function opponentSpeedProfile(species: Species, level = 50): OpponentSpee
   const doublingAbilities = species.abilities
     .filter((a) => a in WEATHER_SPEED_ABILITIES)
     .map((a) => `${a} (${WEATHER_SPEED_ABILITIES[a]})`);
-  return { species, min, max, scarfMax, doublingAbilities };
+  return { species, min, trueMin, max, scarfMax, doublingAbilities };
 }
 
 export type SpeedVerdict = "safe" | "scarf-risk" | "tie" | "range" | "slower";

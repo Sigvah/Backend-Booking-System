@@ -79,7 +79,7 @@ export function buildPrompt(
     const parts = opponents.map((opp) => {
       const profile = opponentSpeedProfile(opp);
       const cell = matchupCell(mySpeed, species, profile);
-      return `vs ${opp.name} (max ${profile.max}, scarf ${profile.scarfMax}): ${VERDICT_LABEL[cell.verdict]}`;
+      return `vs ${opp.name} (max ${profile.max}, scarf ${profile.scarfMax}, TR floor ${profile.trueMin}): ${VERDICT_LABEL[cell.verdict]}`;
     });
     lines.push(`- ${species.name} at ${mySpeed} Speed: ${parts.join("; ")}`);
   }
@@ -103,10 +103,13 @@ export function buildPrompt(
 }
 
 const SYSTEM_PROMPT =
-  "You are an expert competitive Pokemon (VGC / Pokemon Champions) coach. " +
-  "You know current metagame trends, common sets, items and EV spreads. " +
+  "You are an expert competitive Pokemon coach helping a player of Pokemon Champions. " +
   "The user gives you their exact team and the opponent's team preview. " +
-  "Exact speed calculations are provided — do not recompute or contradict them. " +
+  "Exact speed calculations and verified matchup hazards are provided — do not recompute " +
+  "or contradict them. Important honesty rule: your knowledge of common sets, items and " +
+  "spreads comes from mainline VGC, and Pokemon Champions is a newer game whose metagame " +
+  "you have not observed — when you predict an opponent's set, frame it as a likelihood " +
+  "('in VGC this usually runs...'), never as a certainty. " +
   "Answer in tight markdown with short sections and bullet points.";
 
 export async function* streamGamePlan(

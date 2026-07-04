@@ -1183,3 +1183,136 @@ td.cell-slower { background: rgba(232, 84, 79, 0.18); }
   color: var(--text-dim);
   line-height: 1.5;
 }
+
+/* ---- team builder ---- */
+
+.team-actions-top {
+  margin-bottom: 16px;
+}
+
+.mon-head-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.mon-head-main .species-select input {
+  font-size: 0.95rem;
+  padding: 5px 8px;
+}
+
+.add-mon {
+  margin-top: 10px;
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  background: none;
+  color: var(--text-dim);
+  padding: 10px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.add-mon:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.ev-block,
+.moves-block {
+  margin-top: 8px;
+}
+
+.ev-heading {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+
+.ev-total {
+  color: var(--text-dim);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.ev-total.over {
+  color: #e8544f;
+  font-weight: 700;
+}
+
+.ev-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 5px;
+}
+
+.ev-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.ev-grid input {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  padding: 4px 5px;
+  font-size: 0.82rem;
+  width: 100%;
+}
+
+.moves-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+
+.moves-grid input {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  padding: 5px 8px;
+  font-size: 0.85rem;
+}
+
+/* ---- saved opponents & misc ---- */
+
+.saved-opponents {
+  margin-top: 12px;
+}
+
+.saved-opponents .save-name {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  padding: 7px 10px;
+  font-size: 0.85rem;
+  min-width: 260px;
+}
+
+.saved-opponents select {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  padding: 7px 10px;
+  font-size: 0.85rem;
+}
+
+.tr-floor {
+  font-size: 0.72rem;
+  color: #a06ae8;
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+.disclaimer {
+  margin-top: 12px;
+  font-style: italic;
+}

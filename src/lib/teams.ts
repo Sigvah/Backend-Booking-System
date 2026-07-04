@@ -27,6 +27,7 @@ export const ZERO_EVS: StatsTable = { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe
 export const MAX_IVS: StatsTable = { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 };
 
 const STORAGE_KEY = "csc:teams";
+const OPPONENTS_KEY = "csc:opponents";
 
 export function loadTeams(): Team[] {
   try {
@@ -39,6 +40,45 @@ export function loadTeams(): Team[] {
 
 export function saveTeams(teams: Team[]): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(teams));
+}
+
+/** A scouted opponent team — just the six species, saved for later study. */
+export interface OpponentSet {
+  id: string;
+  name: string;
+  speciesIds: string[];
+}
+
+export function loadOpponentSets(): OpponentSet[] {
+  try {
+    const raw = localStorage.getItem(OPPONENTS_KEY);
+    return raw ? (JSON.parse(raw) as OpponentSet[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveOpponentSets(sets: OpponentSet[]): void {
+  localStorage.setItem(OPPONENTS_KEY, JSON.stringify(sets));
+}
+
+export function newId(prefix: string): string {
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+/** A blank set for building a team by hand (no paste needed). */
+export function blankMon(speciesId: string): TeamMon {
+  const species = getSpecies(speciesId);
+  return {
+    speciesId,
+    item: "",
+    ability: species?.abilities[0] ?? "",
+    level: 50,
+    nature: "Serious",
+    evs: { ...ZERO_EVS },
+    ivs: { ...MAX_IVS },
+    moves: [],
+  };
 }
 
 const byName = new Map<string, Species>();
@@ -183,7 +223,9 @@ export function serializeTeam(team: Team): string {
         .map(([k, v]) => `${v} ${statLabel(k as StatKey)}`)
         .join(" / ");
       if (ivs) lines.push(`IVs: ${ivs}`);
-      for (const move of mon.moves) lines.push(`- ${move}`);
+      for (const move of mon.moves) {
+        if (move.trim()) lines.push(`- ${move}`);
+      }
       return lines.join("\n");
     })
     .join("\n\n");

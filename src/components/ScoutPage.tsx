@@ -16,7 +16,13 @@ import {
   buildPrompt,
   streamGamePlan,
 } from "../lib/claude";
-import { Team } from "../lib/teams";
+import {
+  OpponentSet,
+  Team,
+  loadOpponentSets,
+  newId,
+  saveOpponentSets,
+} from "../lib/teams";
 import { computeWarnings } from "../lib/warnings";
 import { SpeciesSelect, Sprite } from "./SpeciesSelect";
 
@@ -34,6 +40,8 @@ export function ScoutPage({ teams, settings, onOpenSettings }: Props) {
   const [planState, setPlanState] = useState<"idle" | "streaming" | "error">("idle");
   const [planError, setPlanError] = useState("");
   const [infoSpecies, setInfoSpecies] = useState<Species | null>(null);
+  const [savedOpponents, setSavedOpponents] = useState<OpponentSet[]>(() => loadOpponentSets());
+  const [saveName, setSaveName] = useState("");
   const abortRef = useRef(false);
 
   const team = teams.find((t) => t.id === teamId) ?? teams[0];
@@ -148,6 +156,70 @@ export function ScoutPage({ teams, settings, onOpenSettings }: Props) {
             </div>
           ))}
         </div>
+
+        <div className="row saved-opponents">
+          {activeOpponents.length > 0 && (
+            <>
+              <input
+                type="text"
+                className="save-name"
+                placeholder="Name this team (e.g. rain team from ladder)"
+                value={saveName}
+                onChange={(e) => setSaveName(e.target.value)}
+              />
+              <button
+                onClick={() => {
+                  const next = [
+                    ...savedOpponents,
+                    {
+                      id: newId("opp"),
+                      name: saveName.trim() || `Opponent ${savedOpponents.length + 1}`,
+                      speciesIds: activeOpponents.map((o) => o.id),
+                    },
+                  ];
+                  setSavedOpponents(next);
+                  saveOpponentSets(next);
+                  setSaveName("");
+                }}
+              >
+                Save opponent team
+              </button>
+            </>
+          )}
+          {savedOpponents.length > 0 && (
+            <>
+              <select
+                value=""
+                onChange={(e) => {
+                  const set = savedOpponents.find((s) => s.id === e.target.value);
+                  if (!set) return;
+                  const loaded = set.speciesIds.map((id) => getSpecies(id) ?? null);
+                  setOpponents([...loaded, ...Array(6).fill(null)].slice(0, 6));
+                }}
+              >
+                <option value="" disabled>
+                  Load saved opponent…
+                </option>
+                {savedOpponents.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={() => {
+                  if (!savedOpponents.length) return;
+                  if (confirm("Delete ALL saved opponent teams?")) {
+                    setSavedOpponents([]);
+                    saveOpponentSets([]);
+                  }
+                }}
+              >
+                Clear saved
+              </button>
+            </>
+          )}
+        </div>
       </section>
 
       {activeOpponents.length > 0 && team && (
@@ -171,6 +243,14 @@ export function ScoutPage({ teams, settings, onOpenSettings }: Props) {
                         <div className="range">
                           {p.min}–{p.max} <span className="scarf">⚡{p.scarfMax}</span>
                         </div>
+                        {opp.baseStats.spe <= 70 && (
+                          <div
+                            className="tr-floor"
+                            title="Minimum possible speed (0 IVs, minus nature — how Trick Room builds run)"
+                          >
+                            ▼{p.trueMin} TR floor
+                          </div>
+                        )}
                         {p.doublingAbilities.map((a) => (
                           <div key={a} className="ability-note">
                             ×2: {a}
@@ -271,6 +351,13 @@ export function ScoutPage({ teams, settings, onOpenSettings }: Props) {
           )}
           {planState === "error" && <div className="errors">⚠ {planError}</div>}
           {plan && <PlanView text={plan} />}
+          {settings.apiKey && (
+            <p className="hint disclaimer">
+              The speed numbers and hazard warnings above are exact. Claude's set and item
+              predictions come from general competitive-Pokemon knowledge, not Champions' live
+              metagame — treat them as educated guesses, not facts.
+            </p>
+          )}
         </section>
       )}
 

@@ -6,16 +6,17 @@ draft your game plan.
 
 ## The workflow
 
-1. **Teams** — import your teams once, in the standard team-export format
-   (Showdown paste). Full sets: EVs, IVs, natures, items, abilities, moves.
-   Everything is stored in your browser (localStorage); export back to text
-   any time.
-2. **Scout** — at team preview, pick your team and type in the opponent's 6.
-   You instantly get a color-coded speed matrix: each of their Pokemon's
-   realistic speed range (min ↔ max invested, + Choice Scarf ceiling, weather
-   ability notes) against your actual spreads — "outspeeds even Scarf",
-   "outspeeds unless Scarf", "speed tie", "depends on their EVs", "always
-   slower" — plus super-effective STAB warnings both ways.
+1. **Teams** — build your team directly in the app (pick species, item,
+   ability, nature, EVs and moves — no external tools needed), or import via
+   the standard team-export format (Showdown paste) as a shortcut. Everything
+   is stored in your browser (localStorage); export back to text any time.
+2. **Scout** — at team preview, pick your team and type in the opponent's 6
+   (save frequent opponents for later study). You instantly get a color-coded
+   speed matrix: each of their Pokemon's realistic speed range (uninvested ↔
+   max, Choice Scarf ceiling, and the 0-IV/minus-nature Trick Room floor for
+   slow Pokemon) against your actual spreads, plus deterministic hazard
+   warnings — which of your moves fail against which of their Pokemon,
+   Trick Room readiness, weather speed combos.
 3. **Game plan (Claude)** — one button sends your full team + their 6 + the
    exact speed math to Claude (Haiku by default) and streams back: their
    likely sets, the biggest threats each way, recommended leads/backs for
