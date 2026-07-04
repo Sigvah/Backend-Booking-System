@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { CalculatorPage } from "./components/CalculatorPage";
+import { GuidePage } from "./components/GuidePage";
 import { ScoutPage } from "./components/ScoutPage";
 import { SettingsModal } from "./components/SettingsModal";
 import { TeamsPage } from "./components/TeamsPage";
 import { LlmSettings, loadSettings, saveSettings } from "./lib/claude";
 import { Team, loadTeams, saveTeams } from "./lib/teams";
 
-type Tab = "scout" | "teams" | "calculator";
+type Tab = "scout" | "teams" | "calculator" | "guide";
 
 export default function App() {
   const [tab, setTab] = useState<Tab>("scout");
@@ -45,6 +46,9 @@ export default function App() {
           >
             Speed Calculator
           </button>
+          <button className={tab === "guide" ? "active" : ""} onClick={() => setTab("guide")}>
+            Beginner Guide
+          </button>
         </nav>
       </header>
 
@@ -53,6 +57,7 @@ export default function App() {
       )}
       {tab === "teams" && <TeamsPage teams={teams} onChange={setTeams} />}
       {tab === "calculator" && <CalculatorPage />}
+      {tab === "guide" && <GuidePage />}
 
       {showSettings && (
         <SettingsModal

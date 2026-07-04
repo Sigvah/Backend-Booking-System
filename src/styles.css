@@ -967,3 +967,187 @@ td.cell-slower { background: rgba(232, 84, 79, 0.18); }
 .modal-actions {
   justify-content: flex-end;
 }
+
+/* ---- guide ---- */
+
+.guide section {
+  margin-bottom: 28px;
+  max-width: 860px;
+}
+
+.guide h2 {
+  font-size: 1.1rem;
+  margin: 0 0 10px;
+  color: var(--accent);
+}
+
+.guide ul {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  line-height: 1.55;
+  font-size: 0.92rem;
+}
+
+.guide-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.guide-table th,
+.guide-table td {
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.guide-table thead th {
+  background: var(--bg-panel);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+}
+
+.guide-chip {
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+/* ---- scout extras ---- */
+
+.name-link {
+  background: none;
+  border: none;
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline dotted var(--text-dim);
+  text-underline-offset: 3px;
+}
+
+.name-link:hover {
+  color: var(--accent);
+}
+
+.warn-tag {
+  font-size: 0.7rem;
+  color: #e8a04f;
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+/* ---- pokemon info modal ---- */
+
+.info-modal {
+  width: min(560px, 94vw);
+  max-height: 88vh;
+  overflow-y: auto;
+}
+
+.info-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.info-head h2 {
+  margin: 0 0 4px;
+}
+
+.stat-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.stat-bar-row {
+  display: grid;
+  grid-template-columns: 64px 1fr 36px;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+}
+
+.stat-label {
+  color: var(--text-dim);
+}
+
+.stat-track {
+  height: 9px;
+  background: var(--bg-input);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.stat-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.stat-value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.def-profile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.type-line {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+}
+
+.type-line-label {
+  width: 76px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.type-line.bad .type-line-label {
+  color: #e8544f;
+}
+
+.type-line.good .type-line-label {
+  color: #4fc06a;
+}
+
+.ability-list h3 {
+  margin: 0 0 8px;
+  font-size: 0.92rem;
+}
+
+.ability-row {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  padding: 6px 10px;
+  border-radius: 7px;
+  margin-bottom: 5px;
+  background: var(--bg-input);
+}
+
+.ability-row.notable {
+  border-left: 3px solid #e8a04f;
+}
+
+.explain-section .explanation {
+  margin-top: 12px;
+  line-height: 1.55;
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+}

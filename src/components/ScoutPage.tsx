@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { Species, getSpecies } from "../data";
+import { headlineTags } from "../lib/abilityNotes";
 import {
   MatchupCell,
   VERDICT_LABEL,
@@ -8,6 +9,7 @@ import {
   opponentSpeedProfile,
   speedItemOf,
 } from "../lib/analysis";
+import { PokemonInfoModal } from "./PokemonInfoModal";
 import {
   BattleFormat,
   LlmSettings,
@@ -30,6 +32,7 @@ export function ScoutPage({ teams, settings, onOpenSettings }: Props) {
   const [plan, setPlan] = useState("");
   const [planState, setPlanState] = useState<"idle" | "streaming" | "error">("idle");
   const [planError, setPlanError] = useState("");
+  const [infoSpecies, setInfoSpecies] = useState<Species | null>(null);
   const abortRef = useRef(false);
 
   const team = teams.find((t) => t.id === teamId) ?? teams[0];
@@ -116,7 +119,9 @@ export function ScoutPage({ teams, settings, onOpenSettings }: Props) {
               {opp ? (
                 <div className="opponent-chip">
                   <Sprite species={opp} size={36} />
-                  <span>{opp.name}</span>
+                  <button className="name-link" onClick={() => setInfoSpecies(opp)}>
+                    {opp.name}
+                  </button>
                   <button
                     className="icon-btn"
                     onClick={() =>
@@ -152,13 +157,22 @@ export function ScoutPage({ teams, settings, onOpenSettings }: Props) {
                     return (
                       <th key={opp.id}>
                         <Sprite species={opp} size={32} />
-                        <div>{opp.name}</div>
+                        <div>
+                          <button className="name-link" onClick={() => setInfoSpecies(opp)}>
+                            {opp.name}
+                          </button>
+                        </div>
                         <div className="range">
                           {p.min}–{p.max} <span className="scarf">⚡{p.scarfMax}</span>
                         </div>
                         {p.doublingAbilities.map((a) => (
                           <div key={a} className="ability-note">
                             ×2: {a}
+                          </div>
+                        ))}
+                        {headlineTags(opp.abilities).map((tag) => (
+                          <div key={tag} className="warn-tag">
+                            ⚠ {tag}
                           </div>
                         ))}
                       </th>
@@ -235,6 +249,14 @@ export function ScoutPage({ teams, settings, onOpenSettings }: Props) {
           {planState === "error" && <div className="errors">⚠ {planError}</div>}
           {plan && <PlanView text={plan} />}
         </section>
+      )}
+
+      {infoSpecies && (
+        <PokemonInfoModal
+          species={infoSpecies}
+          settings={settings}
+          onClose={() => setInfoSpecies(null)}
+        />
       )}
     </div>
   );

@@ -33,3 +33,27 @@ export function bestStab(attackerTypes: string[], defenderTypes: string[]): numb
     ...attackerTypes.map((t) => effectiveness(t, defenderTypes)),
   );
 }
+
+export const ALL_TYPES = Object.keys(CHART);
+
+export interface DefensiveProfile {
+  x4: string[];
+  x2: string[];
+  x05: string[];
+  x025: string[];
+  x0: string[];
+}
+
+/** What a typing is weak to / resists / is immune to. */
+export function defensiveProfile(defenderTypes: string[]): DefensiveProfile {
+  const profile: DefensiveProfile = { x4: [], x2: [], x05: [], x025: [], x0: [] };
+  for (const atk of ALL_TYPES) {
+    const mult = effectiveness(atk, defenderTypes);
+    if (mult === 4) profile.x4.push(atk);
+    else if (mult === 2) profile.x2.push(atk);
+    else if (mult === 0.5) profile.x05.push(atk);
+    else if (mult === 0.25) profile.x025.push(atk);
+    else if (mult === 0) profile.x0.push(atk);
+  }
+  return profile;
+}
