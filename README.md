@@ -36,6 +36,15 @@ localStorage and requests go directly from your browser to the Anthropic API;
 there is no backend. Don't use this setup on a shared/public deployment —
 it's built as a personal tool.
 
+## Hosting
+
+The repo ships a GitHub Pages workflow (`.github/workflows/deploy.yml`):
+every push to `main` runs the tests, builds, and deploys automatically.
+One-time setup: repo **Settings → Pages → Source: GitHub Actions**. Assets
+use relative paths, so it works under any repo name or custom domain. The
+app is fully static — your Anthropic API key stays in your own browser and
+is never part of the deployment.
+
 ## Development
 
 ```bash
