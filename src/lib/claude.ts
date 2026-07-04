@@ -43,6 +43,7 @@ export function buildPrompt(
   team: Team,
   opponents: Species[],
   format: BattleFormat,
+  warnings: { title: string; detail: string }[] = [],
 ): string {
   const lines: string[] = [];
 
@@ -82,12 +83,20 @@ export function buildPrompt(
     });
     lines.push(`- ${species.name} at ${mySpeed} Speed: ${parts.join("; ")}`);
   }
+  if (warnings.length) {
+    lines.push("");
+    lines.push("## Detected matchup hazards (already verified by the app — address them)");
+    for (const w of warnings) lines.push(`- ${w.title}: ${w.detail}`);
+  }
   lines.push("");
   lines.push(
     "Give me a team-preview game plan: (1) the most likely sets/items/spreads for each of their Pokemon, " +
       "(2) their biggest threats to my team and my biggest threats to theirs, " +
       `(3) recommended ${format === "doubles" ? "lead pair + back pair" : "lead + top 2 backups"} with reasoning, ` +
-      "(4) my win condition and the key turns/scenarios to watch for (Tailwind, Trick Room, weather, Protect timing). " +
+      "(4) my win condition and the key turns/scenarios to watch for (Tailwind, Trick Room, weather, Protect timing), " +
+      "and (5) if hazards were detected above, work each one into the plan — e.g. if they threaten Trick Room, " +
+      "say explicitly whether I can beat it and how. " +
+      "The user is a beginner: explain WHY briefly, avoid unexplained jargon. " +
       "Be concrete and concise — this is read during a 90-second team preview.",
   );
   return lines.join("\n");

@@ -1151,3 +1151,35 @@ td.cell-slower { background: rgba(232, 84, 79, 0.18); }
   font-size: 0.9rem;
   white-space: pre-wrap;
 }
+
+/* ---- matchup warnings ---- */
+
+.warnings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.warning-card {
+  border: 1px solid var(--border);
+  border-left-width: 4px;
+  border-radius: 8px;
+  padding: 10px 14px;
+  background: var(--bg-panel);
+}
+
+.warning-card.danger { border-left-color: #e8544f; }
+.warning-card.warning { border-left-color: #e8a04f; }
+.warning-card.info { border-left-color: #4f8fe8; }
+
+.warning-title {
+  font-weight: 600;
+  font-size: 0.92rem;
+  margin-bottom: 3px;
+}
+
+.warning-detail {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}

@@ -17,6 +17,7 @@ import {
   streamGamePlan,
 } from "../lib/claude";
 import { Team } from "../lib/teams";
+import { computeWarnings } from "../lib/warnings";
 import { SpeciesSelect, Sprite } from "./SpeciesSelect";
 
 interface Props {
@@ -37,6 +38,11 @@ export function ScoutPage({ teams, settings, onOpenSettings }: Props) {
 
   const team = teams.find((t) => t.id === teamId) ?? teams[0];
   const activeOpponents = opponents.filter((o): o is Species => o !== null);
+
+  const warnings = useMemo(
+    () => (team ? computeWarnings(team, activeOpponents) : []),
+    [team, activeOpponents],
+  );
 
   const grid = useMemo(() => {
     if (!team) return [];
@@ -59,7 +65,7 @@ export function ScoutPage({ teams, settings, onOpenSettings }: Props) {
     setPlanState("streaming");
     abortRef.current = false;
     try {
-      const prompt = buildPrompt(team, activeOpponents, format);
+      const prompt = buildPrompt(team, activeOpponents, format, warnings);
       for await (const chunk of streamGamePlan(settings, prompt)) {
         if (abortRef.current) return;
         setPlan((p) => p + chunk);
@@ -210,6 +216,23 @@ export function ScoutPage({ teams, settings, onOpenSettings }: Props) {
             <span className="cell-range">depends on their EVs</span>
             <span className="cell-slower">always slower</span>
             <span>⚠ their STAB hits you super-effectively</span>
+          </div>
+        </section>
+      )}
+
+      {warnings.length > 0 && (
+        <section>
+          <h2>Heads-up before you pick</h2>
+          <div className="warnings">
+            {warnings.map((w, i) => (
+              <div key={i} className={`warning-card ${w.severity}`}>
+                <div className="warning-title">
+                  {w.severity === "danger" ? "🚨" : w.severity === "warning" ? "⚠️" : "ℹ️"}{" "}
+                  {w.title}
+                </div>
+                <div className="warning-detail">{w.detail}</div>
+              </div>
+            ))}
           </div>
         </section>
       )}
