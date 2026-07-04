@@ -25,14 +25,17 @@ export function getSpecies(id: string): Species | undefined {
   return byId.get(id);
 }
 
-/** Name search: prefix matches first, then substring matches. */
+const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+/** Name search: prefix matches first, then substring matches.
+ * Separator-insensitive, so "urshifu rapid" finds "Urshifu-Rapid-Strike". */
 export function searchSpecies(query: string, limit = 12): Species[] {
-  const q = query.trim().toLowerCase();
+  const q = normalize(query);
   if (!q) return [];
   const starts: Species[] = [];
   const contains: Species[] = [];
   for (const s of POKEDEX) {
-    const name = s.name.toLowerCase();
+    const name = normalize(s.name);
     if (name.startsWith(q)) starts.push(s);
     else if (name.includes(q)) contains.push(s);
     if (starts.length >= limit) break;

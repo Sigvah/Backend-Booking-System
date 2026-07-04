@@ -1,72 +1,70 @@
-import { useState } from "react";
-import { FieldBar } from "./components/FieldBar";
-import { PokemonPanel } from "./components/PokemonPanel";
-import { Results } from "./components/Results";
-import { MonConfig, makeConfig } from "./config";
-import { getSpecies } from "./data";
-import { DEFAULT_FIELD, FieldState } from "./engine/speed";
+import { useEffect, useState } from "react";
+import { CalculatorPage } from "./components/CalculatorPage";
+import { ScoutPage } from "./components/ScoutPage";
+import { SettingsModal } from "./components/SettingsModal";
+import { TeamsPage } from "./components/TeamsPage";
+import { LlmSettings, loadSettings, saveSettings } from "./lib/claude";
+import { Team, loadTeams, saveTeams } from "./lib/teams";
 
-const COLORS = ["#e8544f", "#4f8fe8", "#4fc06a", "#c99b2e", "#a06ae8", "#e86ab8"];
-const MAX_MONS = 6;
+type Tab = "scout" | "teams" | "calculator";
 
 export default function App() {
-  const [field, setField] = useState<FieldState>(DEFAULT_FIELD);
-  const [configs, setConfigs] = useState<MonConfig[]>([
-    makeConfig("dragapult"),
-    makeConfig("garchomp"),
-  ]);
+  const [tab, setTab] = useState<Tab>("scout");
+  const [teams, setTeams] = useState<Team[]>(() => loadTeams());
+  const [settings, setSettings] = useState<LlmSettings>(() => loadSettings());
+  const [showSettings, setShowSettings] = useState(false);
 
-  const updateConfig = (uid: number, next: MonConfig) =>
-    setConfigs((cs) => cs.map((c) => (c.uid === uid ? next : c)));
+  useEffect(() => saveTeams(teams), [teams]);
 
-  const removeConfig = (uid: number) =>
-    setConfigs((cs) => cs.filter((c) => c.uid !== uid));
-
-  const addConfig = () =>
-    setConfigs((cs) => (cs.length < MAX_MONS ? [...cs, makeConfig("pikachu")] : cs));
+  const updateSettings = (next: LlmSettings) => {
+    setSettings(next);
+    saveSettings(next);
+  };
 
   return (
     <div className="app">
       <header className="app-header">
-        <h1>
-          <span className="accent">Champions</span> Speed Checker
-        </h1>
-        <p className="subtitle">
-          Who moves first? Full Gen 9 speed mechanics: EVs, natures, items,
-          abilities, weather, terrain, Tailwind and Trick Room.
-        </p>
+        <div className="header-row">
+          <h1>
+            <span className="accent">Champions</span> Battle Prep
+          </h1>
+          <button className="icon-btn settings-btn" title="Claude settings" onClick={() => setShowSettings(true)}>
+            ⚙
+          </button>
+        </div>
+        <nav className="tabs">
+          <button className={tab === "scout" ? "active" : ""} onClick={() => setTab("scout")}>
+            Scout
+          </button>
+          <button className={tab === "teams" ? "active" : ""} onClick={() => setTab("teams")}>
+            Teams
+          </button>
+          <button
+            className={tab === "calculator" ? "active" : ""}
+            onClick={() => setTab("calculator")}
+          >
+            Speed Calculator
+          </button>
+        </nav>
       </header>
 
-      <FieldBar field={field} onChange={setField} />
+      {tab === "scout" && (
+        <ScoutPage teams={teams} settings={settings} onOpenSettings={() => setShowSettings(true)} />
+      )}
+      {tab === "teams" && <TeamsPage teams={teams} onChange={setTeams} />}
+      {tab === "calculator" && <CalculatorPage />}
 
-      <div className="panels">
-        {configs.map((cfg, i) => {
-          const species = getSpecies(cfg.speciesId);
-          if (!species) return null;
-          return (
-            <PokemonPanel
-              key={cfg.uid}
-              config={cfg}
-              species={species}
-              field={field}
-              color={COLORS[i % COLORS.length]}
-              onChange={(next) => updateConfig(cfg.uid, next)}
-              onRemove={configs.length > 2 ? () => removeConfig(cfg.uid) : undefined}
-            />
-          );
-        })}
-        {configs.length < MAX_MONS && (
-          <button className="add-panel" onClick={addConfig}>
-            + Add Pokemon
-          </button>
-        )}
-      </div>
-
-      <Results configs={configs} field={field} colors={COLORS} />
+      {showSettings && (
+        <SettingsModal
+          settings={settings}
+          onSave={updateSettings}
+          onClose={() => setShowSettings(false)}
+        />
+      )}
 
       <footer className="app-footer">
-        Data from the Pokemon Showdown pokedex · speed formulas follow the
-        mainline games' 4096-based modifier math
+        Teams stay in your browser · Pokedex data from Pokemon Showdown · speed
+        math follows the games' 4096-based modifier rules
       </footer>
     </div>
   );

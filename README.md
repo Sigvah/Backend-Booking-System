@@ -1,58 +1,66 @@
-# Champions Speed Checker
+# Champions Battle Prep
 
-A web app for checking which Pokemon moves first in **Pokemon Champions** —
-compare full speed setups side by side under any battle conditions.
+A web app for winning team preview in **Pokemon Champions**: store your teams,
+scout the opponent's 6, get exact speed matchups instantly — and let Claude
+draft your game plan.
 
-![App type](https://img.shields.io/badge/app-React%20%2B%20Vite%20%2B%20TypeScript-blue)
+## The workflow
 
-## What it does
+1. **Teams** — import your teams once, in the standard team-export format
+   (Showdown paste). Full sets: EVs, IVs, natures, items, abilities, moves.
+   Everything is stored in your browser (localStorage); export back to text
+   any time.
+2. **Scout** — at team preview, pick your team and type in the opponent's 6.
+   You instantly get a color-coded speed matrix: each of their Pokemon's
+   realistic speed range (min ↔ max invested, + Choice Scarf ceiling, weather
+   ability notes) against your actual spreads — "outspeeds even Scarf",
+   "outspeeds unless Scarf", "speed tie", "depends on their EVs", "always
+   slower" — plus super-effective STAB warnings both ways.
+3. **Game plan (Claude)** — one button sends your full team + their 6 + the
+   exact speed math to Claude (Haiku by default) and streams back: their
+   likely sets, the biggest threats each way, recommended leads/backs for
+   singles or doubles, and your win condition. The app supplies the exact
+   numbers so the model never has to guess the math.
+4. **Speed Calculator** — a deep-dive tab for a specific speed question:
+   two-to-six Pokemon under any conditions (boost stages, items, abilities,
+   weather, terrain, Tailwind, paralysis, Trick Room), using the games' exact
+   4096-based fixed-point modifier chain.
 
-Pick two to six Pokemon, configure each one's setup, set the battle field, and
-see the resulting action order with exact effective speed numbers.
+## Claude API setup
 
-Supported mechanics (Gen 9 rules, which Champions' battle system is based on):
-
-- **Stats** — base speed, level, IVs, EVs, speed natures (+Spe / neutral / −Spe)
-- **Boost stages** — −6 to +6
-- **Items** — Choice Scarf, Booster Energy, Quick Powder, Iron Ball,
-  Macho Brace / Power items, Lagging Tail / Full Incense
-- **Abilities** — Swift Swim, Chlorophyll, Sand Rush, Slush Rush, Surge Surfer,
-  Unburden, Quick Feet, Slow Start, Protosynthesis, Quark Drive
-- **Field** — weather (sun/rain/sand/snow), terrain, Tailwind per side,
-  Trick Room (reverses the order), paralysis
-- **Exact math** — the game's 4096-based fixed-point modifier chain with
-  round-half-down, so results match the cartridge, including edge cases like
-  Choice Scarf 169 → 253 (not 254)
-
-The full Pokedex (1,368 Pokemon incl. regional formes and Megas) is bundled as
-static data — the app works offline and needs no backend.
+Open **⚙ Settings**, paste your Anthropic API key (console.anthropic.com) and
+pick a model — Claude Haiku 4.5 (default, well under a cent per analysis),
+Claude Sonnet 5, or Claude Opus 4.8. The key is stored only in your browser's
+localStorage and requests go directly from your browser to the Anthropic API;
+there is no backend. Don't use this setup on a shared/public deployment —
+it's built as a personal tool.
 
 ## Development
 
 ```bash
 npm install
 npm run dev        # start dev server
-npm test           # run the speed-engine test suite
+npm test           # speed engine + paste parser + analysis tests
 npm run build      # typecheck + production build into dist/
 ```
 
 ### Updating the Pokemon data
 
-The dataset in `src/data/pokedex.json` is generated from the
-[Pokemon Showdown](https://github.com/smogon/pokemon-showdown) pokedex:
+`src/data/pokedex.json` (1,368 Pokemon incl. regional formes and Megas) is
+generated from the [Pokemon Showdown](https://github.com/smogon/pokemon-showdown)
+pokedex:
 
 ```bash
 npm run generate-data
 ```
 
-Re-run it when new Pokemon or formes are released, then commit the updated
-JSON.
-
 ## Project layout
 
 ```
-scripts/generate-data.mjs   dataset generator
-src/engine/speed.ts         speed formulas + turn-order logic (unit tested)
-src/data/pokedex.json       bundled Pokedex (generated)
-src/components/             UI: Pokemon panels, field bar, results
+scripts/generate-data.mjs   Pokedex dataset generator
+src/engine/speed.ts         exact speed formulas + turn order (unit tested)
+src/lib/teams.ts            team storage + Showdown paste parser (unit tested)
+src/lib/analysis.ts         stat calc, opponent speed ranges, matchup verdicts
+src/lib/claude.ts           Claude API integration + prompt builder
+src/components/             UI: Scout, Teams, Calculator, Settings
 ```
