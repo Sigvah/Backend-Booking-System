@@ -1,85 +1,58 @@
-# Fjord Line – Backend Booking System
+# Champions Speed Checker
 
-Backend API for booking ferry passages on the Bergen–Stavanger–Hirtshals–Kristiansand route. Built with C# and ASP.NET Core Minimal APIs.
+A web app for checking which Pokemon moves first in **Pokemon Champions** —
+compare full speed setups side by side under any battle conditions.
 
-## Getting started
+![App type](https://img.shields.io/badge/app-React%20%2B%20Vite%20%2B%20TypeScript-blue)
 
-**Prerequisites:** [.NET 10 SDK](https://dotnet.microsoft.com/download)
+## What it does
+
+Pick two to six Pokemon, configure each one's setup, set the battle field, and
+see the resulting action order with exact effective speed numbers.
+
+Supported mechanics (Gen 9 rules, which Champions' battle system is based on):
+
+- **Stats** — base speed, level, IVs, EVs, speed natures (+Spe / neutral / −Spe)
+- **Boost stages** — −6 to +6
+- **Items** — Choice Scarf, Booster Energy, Quick Powder, Iron Ball,
+  Macho Brace / Power items, Lagging Tail / Full Incense
+- **Abilities** — Swift Swim, Chlorophyll, Sand Rush, Slush Rush, Surge Surfer,
+  Unburden, Quick Feet, Slow Start, Protosynthesis, Quark Drive
+- **Field** — weather (sun/rain/sand/snow), terrain, Tailwind per side,
+  Trick Room (reverses the order), paralysis
+- **Exact math** — the game's 4096-based fixed-point modifier chain with
+  round-half-down, so results match the cartridge, including edge cases like
+  Choice Scarf 169 → 253 (not 254)
+
+The full Pokedex (1,368 Pokemon incl. regional formes and Megas) is bundled as
+static data — the app works offline and needs no backend.
+
+## Development
 
 ```bash
-cd FjordLine
-dotnet run
+npm install
+npm run dev        # start dev server
+npm test           # run the speed-engine test suite
+npm run build      # typecheck + production build into dist/
 ```
 
-The API starts on `http://localhost:5104`.
+### Updating the Pokemon data
 
-## Interactive UI
-
-Open `http://localhost:5104/scalar` in your browser for a full interactive API explorer (Scalar).
-
-## Endpoints
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/departures` | List all departures with route, time and remaining capacity |
-| `POST` | `/departures/{id}/bookings` | Register a booking |
-| `GET` | `/departures/{id}/manifest` | Get passenger list for a departure |
-| `DELETE` | `/departures/{id}/bookings/{bookingId}` | Cancel a booking |
-
-### GET /departures
+The dataset in `src/data/pokedex.json` is generated from the
+[Pokemon Showdown](https://github.com/smogon/pokemon-showdown) pokedex:
 
 ```bash
-curl http://localhost:5104/departures
+npm run generate-data
 ```
 
-### POST /departures/{id}/bookings
+Re-run it when new Pokemon or formes are released, then commit the updated
+JSON.
 
-```bash
-curl -X POST http://localhost:5104/departures/11111111-0000-0000-0000-000000000001/bookings \
-  -H "Content-Type: application/json" \
-  -d '{
-    "passengerName": "Alice Hansen",
-    "passengerCount": 2,
-    "boardingPort": "Bergen",
-    "disembarkPort": "Kristiansand",
-    "vehicle": null
-  }'
+## Project layout
+
 ```
-
-Valid ports: `Bergen`, `Stavanger`, `Hirtshals`, `Kristiansand`
-
-Valid vehicle types: `Car`, `Bus`, `Bicycle` (or `null`)
-
-Returns `409 Conflict` if capacity is exceeded on any segment of the journey.
-
-### GET /departures/{id}/manifest
-
-```bash
-curl http://localhost:5104/departures/11111111-0000-0000-0000-000000000001/manifest
-```
-
-### DELETE /departures/{id}/bookings/{bookingId}
-
-```bash
-curl -X DELETE http://localhost:5104/departures/11111111-0000-0000-0000-000000000001/bookings/{bookingId}
-```
-
-## Seed data
-
-Two departures are pre-loaded on startup:
-
-| ID | Route | Departure |
-|----|-------|-----------|
-| `11111111-0000-0000-0000-000000000001` | Bergen → Stavanger → Hirtshals → Kristiansand | +3 days |
-| `11111111-0000-0000-0000-000000000002` | Bergen → Stavanger → Hirtshals → Kristiansand | +10 days |
-
-## Multi-leg capacity
-
-Capacity is tracked independently per segment. A passenger boarding in Bergen and disembarking in Stavanger only occupies the Bergen–Stavanger segment, leaving capacity on subsequent segments available for other passengers.
-
-## Running tests
-
-```bash
-cd FjordLine.Tests
-dotnet test
+scripts/generate-data.mjs   dataset generator
+src/engine/speed.ts         speed formulas + turn-order logic (unit tested)
+src/data/pokedex.json       bundled Pokedex (generated)
+src/components/             UI: Pokemon panels, field bar, results
 ```
